@@ -8,7 +8,7 @@ In order to use the DbContextUtils you have to adapt your Entity Framework conne
     public partial class Entities : DbContext
     {
         public Entities()
-            : base(new DbContextConnectionAdapter(System.Reflection.Assembly.GetCallingAssembly()).AdaptConnection("name=Entities"))
+            : base(new DbContextConnectionAdapter(System.Reflection.Assembly.GetExecutingAssembly()).AdaptConnection("name=Entities"))
         {
             //...
         }
