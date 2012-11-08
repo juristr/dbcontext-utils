@@ -12,8 +12,9 @@ using System.Xml.XPath;
 using System.Data.Mapping;
 using System.Configuration;
 using DbContextUtils.SchemaTranslations;
+using DbContextUtils.ConnectionAdapter;
 
-namespace DbContextUtils.ConnectionAdapter
+namespace Siag.Base.EntityFramework.ConnectionAdapter
 {
 
     public class DbContextConnectionAdapter
@@ -97,14 +98,24 @@ namespace DbContextUtils.ConnectionAdapter
                 // Walk the SSDL EntitySets and adapt
                 foreach (var storeEntitySet in xml.Descendants(StoreNamespace + "EntitySet"))
                 {
-                    var currentSchema = storeEntitySet.Attribute("Schema").Value;
-                    var translation = schemaTransl.FirstOrDefault(x => x.OldName == currentSchema);
-                    if (translation != null)
-                    {
-                        storeEntitySet.Attribute("Schema").Value = translation.NewName;
-                    }
+                    AdaptSchemaOnElement(storeEntitySet, schemaTransl);
+                    //var currentSchema = storeEntitySet.Attribute("Schema").Value;
+                    //var translation = schemaTransl.FirstOrDefault(x => x.OldName == currentSchema);
+                    //if (translation != null)
+                    //{
+                    //    storeEntitySet.Attribute("Schema").Value = translation.NewName;
+                    //}
+                }
 
-                    //ModelAdapter.AdaptStoreEntitySet(storeEntitySet);
+                foreach (var functionElement in xml.Descendants(StoreNamespace + "Function"))
+                {
+                    AdaptSchemaOnElement(functionElement, schemaTransl);
+                    //var currentSchema = storeEntitySet.Attribute("Schema").Value;
+                    //var translation = schemaTransl.FirstOrDefault(x => x.OldName == currentSchema);
+                    //if (translation != null)
+                    //{
+                    //    storeEntitySet.Attribute("Schema").Value = translation.NewName;
+                    //}
                 }
             }
 
@@ -114,6 +125,16 @@ namespace DbContextUtils.ConnectionAdapter
             //    ModelAdapter.AdaptStoreAssociationEnd(associationEnd);
 
             return xml.CreateReader();
+        }
+
+        private void AdaptSchemaOnElement(XElement element, IEnumerable<SchemaTranslation> schemaTranslations)
+        {
+            var currentSchema = element.Attribute("Schema").Value;
+            var translation = schemaTranslations.FirstOrDefault(x => x.OldName == currentSchema);
+            if (translation != null)
+            {
+                element.Attribute("Schema").Value = translation.NewName;
+            }
         }
 
         private static MetadataWorkspace CreateWorkspace(XmlReader conceptualReader, XmlReader storageReader, XmlReader mappingReader)
